@@ -81,5 +81,11 @@ def result():
     return render_template("index.html")
 
 # Main function to run the app
+# if __name__ == "__main__":
+#     app.run(host="127.0.0.1", port=8080, debug=True)
+
+# Main function to run the app
 if __name__ == "__main__":
-    app.run(host="127.0.0.1", port=8080, debug=True)
+    # Change host and port to work with Render
+    port = int(os.environ.get("PORT", 8080))  # Use PORT from environment
+    app.run(host="0.0.0.0", port=port, debug=True)
