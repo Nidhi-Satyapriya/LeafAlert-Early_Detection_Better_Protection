@@ -1,0 +1,43 @@
+name: Build and deploy Python app to Azure Web App - agricrop-disease-detection
+
+trigger:
+  branches:
+    - main
+
+jobs:
+  build:
+    pool:
+      vmImage: ubuntu-latest
+
+    steps:
+      - checkout: self
+
+      - script:
+          - python -m venv antenv
+          - source antenv/bin/activate
+      - script: |
+          pip install -r requirements.txt
+
+      - script: zip -r release.zip ./* -x 'antenv/*' 'static/*'
+
+      - task: PublishPipelineArtifact@1
+        inputs:
+          targetPath: $(System.ArtifactStagingDirectory)
+          artifact: 'python-app'
+
+  deploy:
+    dependsOn: build
+    environment: 
+      name: 'Production'
+      resourceGroup: '<your-resource-group>'
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+            - task: AzureWebApp@1
+              inputs:
+                appType: webApp
+                appName: 'agricrop-disease-detection'
+                package: $(System.ArtifactStagingDirectory)/release.zip
+                slotName: Production
+                publishProfile: $(AZUREWEBAPP_PUBLISH_PROFILE)
